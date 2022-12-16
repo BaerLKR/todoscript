@@ -143,7 +143,7 @@ case "$#" in
             -a | --add | add)
                 #wenn keine ausreichenden Argumente gegeben sind, verweise auf die Hilfe
                 #wenn ein weiterer Parameter gegeben ist, verweise auf die "add hilfe"
-                if [[ $2 == "" || $3 == "" || $4 != "" ]]
+                if [[ $2 == "" || $3 == "" || $4 != "" || $2 > 3 ]]
                 then
                     hilfe "add"
                 else
@@ -178,7 +178,6 @@ case "$#" in
                 else
                     #sonst frage nach Bestätigung
                     read -p "Sicher? y/N "
-                        echo
                     
                     #wenn Ja, dann lösche
                     if [[ $REPLY =~ ^[Yy]$ ]]
