@@ -32,6 +32,61 @@ Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    
 #wo die tododatei liegt
 todo=~/.todo
 
+
+aufz() {
+        # wenn die Aufzählunf als "exten" gekennzeichnet ist
+            # dann formatiere anders und echo
+        if [[ $2 == "e" ]]
+        then
+            #entfernen der Dringlichkeitszahl
+            rmurg=$(head -$1 $todo | tail +$1 | cut -c3-)
+
+            #wenn "unwichtig, dann gelb"
+            if [[ $(head -$1 $todo | tail +$1 | head -c 1) == 1 ]]
+            then
+                out="$out${BYel}$rmurg${Whi}"
+
+            #wenn mittel, dann rot
+            else if [[ $(head -$1 $todo | tail +$1 | head -c 1) == 2 ]]
+            then
+                out="$out${BRed}$rmurg${Whi}"
+
+            #wenn wichtig, dann Lila
+            else if [[ $(head -$1 $todo | tail +$1 | head -c 1) == 3 ]]
+            then
+                out="$out${BPur}$rmurg${Whi}"
+
+            #wenn undefiniert, dann weiß und nicht "beschnitten"
+            else
+                out="$out${BWhi}$(head -$1 $todo | tail +$1)${Whi}"
+            fi fi fi
+            echo -e "${BWhi}$out"
+        else
+            #entfernen der Dringlichkeitszahl
+            rmurg=$(head -$1 $todo | tail +$1 | cut -c3-)
+
+            #wenn "unwichtig, dann gelb"
+            if [[ $(head -$1 $todo | tail +$1 | head -c 1) == 1 ]]
+            then
+                out="$out \n $1 ${BYel}$rmurg${BWhi}"
+
+            #wenn mittel, dann rot
+            else if [[ $(head -$1 $todo | tail +$1 | head -c 1) == 2 ]]
+            then
+                out="$out \n $1 ${BRed}$rmurg${BWhi}"
+
+            #wenn wichtig, dann Lila
+            else if [[ $(head -$1 $todo | tail +$1 | head -c 1) == 3 ]]
+            then
+                out="$out \n $1 ${BPur}$rmurg${BWhi}"
+
+            #wenn undefiniert, dann weiß und nicht "beschnitten"
+            else
+                out="$out \n $1 ${BWhi}$(head -$1 $todo | tail +$1)${BWhi}"
+            fi fi fi
+        fi
+}
+
 list() {
 
     #list variable
@@ -45,29 +100,7 @@ list() {
 
     #Schleife, durch alle  Zeilen der TODO Datei (Mit Abfrage, wie viele Zeilen es sind)
     for ((i = 1 ; i < $zeile ; i++)); do
-
-        #entfernen der Dringlichkeitszahl
-        rmurg=$(head -$i $todo | tail +$i | cut -c3-)
-
-        #wenn "unwichtig, dann gelb"
-        if [[ $(head -$i $todo | tail +$i | head -c 1) == 1 ]]
-        then
-            out="$out \n $i ${BYel}$rmurg${BWhi}"
-
-        #wenn mittel, dann rot
-        else if [[ $(head -$i $todo | tail +$i | head -c 1) == 2 ]]
-        then
-            out="$out \n $i ${BRed}$rmurg${BWhi}"
-
-        #wenn wichtig, dann Lila
-        else if [[ $(head -$i $todo | tail +$i | head -c 1) == 3 ]]
-        then
-            out="$out \n $i ${BPur}$rmurg${BWhi}"
-
-        #wenn undefiniert, dann weiß und nicht "beschnitten"
-        else
-            out="$out \n $i ${BWhi}$(head -$i $todo | tail +$i)${BWhi}"
-        fi fi fi
+        aufz "$i"
     done
 
     #Inhalt der Listvariable ausgeben
@@ -107,7 +140,7 @@ hilfe() {
                 ;;
 
             -l | --list | list)
-                echo "help list"
+                echo -e "   todo.sh ${BGre}- / l${Gre} / list / --list ${Whi}[${Cya}leer, oder Zeilenzahl${Whi}]"
                 ;;
             *)
             #wenn ein ungültiges Hilfsagrument gegeben ist
@@ -166,41 +199,73 @@ case "$#" in
                 ;;
 
             -l | l | --list | list)
-                #list Funktion
-                list
+                #dokumentenlänge check
+                za=$(wc -l $todo | head -c 1)+1
+
+                #wenn kein Argument gegeben, dann standart list
+                if [[ $2 == "" ]]
+                then
+                    list
+                else
+                    #wenn es gegeben ist und der Dokumentenlänge entspricht, dann
+                    if [[ $2 < $za ]]
+                    then
+
+                        #list als "extern"
+                        aufz "$2" "e"
+                    else
+
+                        #sonst hilfe
+                        hilfe "list"
+                    fi
+                fi
                 ;;
 
             d | -d | --delete | delete)
+
                 #wenn keine zu löschende Zeile gegeben ist, verweise auf die Hilfe
                 if [[ $2 == "" ]]
                 then
                     hilfe "delete"
                 else
-                    #sonst frage nach Bestätigung
-                    z=$(head -$2 $todo | tail +$2 | cut -c3-)
-                    echo -e "Sicher, dass du '${BGre}$z${Whi}' löschen möchtest?"
-                    read -p "[y/N] "
+                
+                    #wenn die gegebene Zahl innerhalb der Dokumentgröße liegt, dann
+                    za=$(wc -l $todo | head -c 1)+1
+                    if [[ $2 < $za ]]
+                    then
+
+                        #als "extern" aufzählen
+                        z=$(aufz "$2" "e")
+                        echo -e "Sicher, dass du '$z' löschen möchtest?"
+
+                        #antwort abfragen
+                        read -p "[y/N] "
+
+                            #wenn Ja, dann lösche
+                            if [[ $REPLY =~ ^[Yy]$ ]]
+                            then
+                                #(Formatierung)
+                                a="$2d"
+                                #lösche die gegebene Zeile
+                                sed -i "$a" $todo
+                                #und sende eine Löschbestätigung in Form einer aktualisierten Aufzählung der TODOs
+                                list
+                            else if [[ $REPLY =~ ^[Nn]$ ]]
+                            #wenn nein
+                            then
+                                #dann abbrechen
+                                echo -e "${Pur}Abgebrochen"
+                            else if [[ $REPLY == "" ]]
+                            #wenn nichts gegeben ist
+                            then
+                                # dann breche auch ab
+                                echo -e "${Pur}Abgebrochen"
+                            fi fi fi
                     
-                    #wenn Ja, dann lösche
-                    if [[ $REPLY =~ ^[Yy]$ ]]
-                    then
-                        #(Formatierung)
-                        a="$2d"
-                        #lösche die gegebene Zeile
-                        sed -i "$a" $todo
-                        #und sende eine Löschbestätigung in Form einer aktualisierten Aufzählung der TODOs
-                        list
-                    else if [[ $REPLY =~ ^[Nn]$ ]]
-                    #wenn nein
-                    then
-                        #dann abbrechen
-                        echo -e "${Pur}Abgebrochen"
-                    else if [[ $REPLY == "" ]]
-                    #wenn nichts gegeben ist
-                    then
-                        # dann breche auch ab
-                        echo -e "${Pur}Abgebrochen"
-                    fi fi fi
+                    #wenn die Zahl zu groß ist, dann verweise auf Hilfe
+                    else
+                        hilfe "delete"
+                    fi
                 fi
                 ;;
 
