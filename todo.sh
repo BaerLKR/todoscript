@@ -30,7 +30,7 @@ Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    
 
 
 #wo die tododatei liegt
-todo=~/todo
+todo=~/.todo
 
 list() {
 
@@ -77,9 +77,9 @@ list() {
 #inhalt der allgemeinen Hilfe
 help_genreal() {
     echo -e "   todo.sh [${Gre}flag${Whi}] [${Cya}argument${Whi}]"
-    echo -e "       ${BGre}-a${Gre} / add / --add ${Cya}      Priorität${Whi},${Cya} TODO"
-    echo -e "       ${BGre}-d${Gre} / delete / --delete${Cya} Zeilennummer"
-    echo -e "       ${BGre}-l${Gre} / list / --list"
+    echo -e "       ${BGre}-a / a${Gre} / add / --add ${Cya}      Priorität${Whi},${Cya} TODO"
+    echo -e "       ${BGre}-d / d${Gre} / delete / --delete${Cya} Zeilennummer"
+    echo -e "       ${BGre}-l / l${Gre} / list / --list"
     echo -e "   ${BPur}todo.sh help [${BGre}flag${BPur}]"
     echo -e "   ${Red}todo.sh help ${Gre} init${Whi}"
 }
@@ -95,11 +95,11 @@ hilfe() {
         #verschiedene Hilfsargumente
         case "$1" in
             -d | --delete | delete)
-                echo -e "   todo.sh ${BGre}-d${Gre} / delete / --delete ${Whi}[${Cya}Zeilennummer${Whi}]"
+                echo -e "   todo.sh ${BGre}-d / d${Gre} / delete / --delete ${Whi}[${Cya}Zeilennummer${Whi}]"
                 ;;
 
             -a | --add | add)
-                echo -e "   todo.sh ${BGre}-a${Gre} / add / --add ${Whi}[${Cya}Dringlichkeit (1; 2; 3), TODO (keine Leerzeichen)${Whi}]"
+                echo -e "   todo.sh ${BGre}-a / a${Gre} / add / --add ${Whi}[${Cya}Dringlichkeit (1; 2; 3), TODO (keine Leerzeichen)${Whi}]"
                 ;;
 
             init)
@@ -140,7 +140,7 @@ case "$#" in
     1 | 2 | 3 | 4)
         case "$1" in
             #add/Hinzufügen eines Punktes
-            -a | --add | add)
+            -a | --add | a | add)
                 #wenn keine ausreichenden Argumente gegeben sind, verweise auf die Hilfe
                 #wenn ein weiterer Parameter gegeben ist, verweise auf die "add hilfe"
                 if [[ $2 == "" || $3 == "" || $4 != "" || $2 > 3 ]]
@@ -153,7 +153,7 @@ case "$#" in
                 fi
                 ;;
 
-            -h | --help | help)
+            -h | h | --help | help)
 
                 #wenn keine Spezifizierung vorgenommen, verweise auf die allgemeine Hilfe
                 if [[ $2 == "" ]]
@@ -165,19 +165,21 @@ case "$#" in
                 fi
                 ;;
 
-            -l | --list | list)
+            -l | l | --list | list)
                 #list Funktion
                 list
                 ;;
 
-            -d | --delete | delete)
+            d | -d | --delete | delete)
                 #wenn keine zu löschende Zeile gegeben ist, verweise auf die Hilfe
                 if [[ $2 == "" ]]
                 then
                     hilfe "delete"
                 else
                     #sonst frage nach Bestätigung
-                    read -p "Sicher? y/N "
+                    z=$(head -$2 $todo | tail +$2 | cut -c3-)
+                    echo -e "Sicher, dass du '${BGre}$z${Whi}' löschen möchtest?"
+                    read -p "[y/N] "
                     
                     #wenn Ja, dann lösche
                     if [[ $REPLY =~ ^[Yy]$ ]]
