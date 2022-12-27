@@ -96,7 +96,7 @@ list() {
     cont=$(cat $todo)
 
     #zeile, in der die Schleife beim Auslesen ist
-    zeile=$(wc -l $todo | head -c 1)+1
+    zeile=$(cat $todo | wc -l)+1
 
     #Schleife, durch alle  Zeilen der TODO Datei (Mit Abfrage, wie viele Zeilen es sind)
     for ((i = 1 ; i < $zeile ; i++)); do
@@ -127,19 +127,19 @@ hilfe() {
         1)
         #verschiedene Hilfsargumente
         case "$1" in
-            -d | --delete | delete)
+            -d | --delete | delete | d)
                 echo -e "   todo.sh ${BGre}-d / d${Gre} / delete / --delete ${Whi}[${Cya}Zeilennummer${Whi}]"
                 ;;
 
-            -a | --add | add)
-                echo -e "   todo.sh ${BGre}-a / a${Gre} / add / --add ${Whi}[${Cya}Dringlichkeit (1; 2; 3), TODO (keine Leerzeichen)${Whi}]"
+            -a | --add | add | a)
+                echo -e "   todo.sh ${BGre}-a / a${Gre} / add / --add ${Whi}[${Cya}Dringlichkeit (1; 2; 3), TODO (Leerzeichen nut mit Anführungszeichen)${Whi}]"
                 ;;
 
             init)
                 echo -e "  \n Es wird empfohlen den 'init' Befehl zu nutzen, wenn das Programm zum ersten Mal benutzt wird."
                 ;;
 
-            -l | --list | list)
+            -l | --list | list | l)
                 echo -e "   todo.sh ${BGre}- / l${Gre} / list / --list ${Whi}[${Cya}leer, oder Zeilenzahl${Whi}]"
                 ;;
             *)
@@ -230,8 +230,8 @@ case "$#" in
                 else
                 
                     #wenn die gegebene Zahl innerhalb der Dokumentgröße liegt, dann
-                    za=$(wc -l $todo | head -c 1)+1
-                    if [[ $2 < $za ]]
+                    za=$(cat $todo | wc -l)+1
+                    if (( $2 < $za ))
                     then
 
                         #als "extern" aufzählen
