@@ -154,7 +154,7 @@ init() {
     touch $todo
 
     #fill it with placeholder content
-    echo "1 Erstelle deine ersten TODOs" >> $todo
+    echo "1 create your first TODOs" >> $todo
     echo "3 todo.sh -h" >> $todo
 }
 
@@ -230,7 +230,7 @@ case "$#" in
 
                         #list that line
                         z=$(aufz "$2" "e")
-                        echo -e "Sicher, dass du '$z' löschen möchtest?"
+                        echo -e "Are you sure that you want to delete '$z'?"
 
                         #ask confirmation
                         read -p "[y/N] "
@@ -248,12 +248,12 @@ case "$#" in
                             #if no
                             then
                                 #exit
-                                echo -e "${Pur}Abgebrochen${RCol}"
+                                echo -e "${Pur}stopped${RCol}"
                             else if [[ $REPLY == "" ]]
                             #if nothing is awnsered
                             then
                                 #exit
-                                echo -e "${Pur}Abgebrochen${RCol}"
+                                echo -e "${Pur}stopped${RCol}"
                             fi fi fi
                     
                     #if the line you want to delete doesn't exist, call the help function
