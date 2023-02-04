@@ -112,6 +112,7 @@ help_genreal() {
     echo -e "       ${BGre}-l / l${Gre} / list / --list"
     echo -e "   ${BPur}todo.sh help [${BGre}flag${BPur}]"
     echo -e "   ${Red}todo.sh help ${Gre} init${Whi}"
+    echo -e "   ${Red}the TODOs are stored at ${Gre}$todo${RCol}"
 }
 
 hilfe() {
